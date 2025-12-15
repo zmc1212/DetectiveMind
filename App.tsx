@@ -112,7 +112,10 @@ const App: React.FC = () => {
     }
   };
   
-  const getAvatarUrl = (style?: string) => {
+  const getAvatarUrl = (suspect: Suspect) => {
+    if (suspect.imageUrl) return suspect.imageUrl;
+
+    const style = suspect.avatarStyle;
     if (!style) return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
     const s = style.toLowerCase();
     if (s.includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
@@ -197,7 +200,7 @@ const App: React.FC = () => {
                             
                             {/* Image */}
                             <img 
-                                src={getAvatarUrl(suspect.avatarStyle)}
+                                src={getAvatarUrl(suspect)}
                                 alt={suspect.name}
                                 className={`
                                     h-[50vh] md:h-[65vh] object-cover transition-all duration-500 mask-image-gradient

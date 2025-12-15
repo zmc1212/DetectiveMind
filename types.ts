@@ -24,6 +24,7 @@ export interface Suspect {
   role: string; // e.g., "Butler", "Daughter"
   description: string;
   avatarStyle: string; // prompting hint for UI or placeholder choice
+  imageUrl?: string; // Direct URL to image (local or remote)
   secret: string; // Hidden info
   personality: string;
   offlineResponses?: OfflineResponse[]; // For offline mode interaction

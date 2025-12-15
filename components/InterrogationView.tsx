@@ -47,7 +47,10 @@ export const InterrogationView: React.FC<InterrogationViewProps> = ({
 
   const activeQuestions = questionPool.slice(0, getQuestionCount());
 
-  const getAvatarUrl = (style?: string) => {
+  const getAvatarUrl = (suspect: Suspect) => {
+    if (suspect.imageUrl) return suspect.imageUrl;
+    
+    const style = suspect.avatarStyle;
     if (!style) return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
     const s = style.toLowerCase();
     if (s.includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
@@ -172,7 +175,7 @@ export const InterrogationView: React.FC<InterrogationViewProps> = ({
                 {suspect.name}
             </div>
             <img 
-                src={getAvatarUrl(suspect.avatarStyle)} 
+                src={getAvatarUrl(suspect)} 
                 alt={suspect.name}
                 className="h-[50vh] md:h-[70vh] object-cover drop-shadow-[0_0_30px_rgba(0,0,0,0.8)]"
             />

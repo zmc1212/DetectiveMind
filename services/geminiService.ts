@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { CaseData, Difficulty, Message, EvaluationResult, Suspect } from "../types";
 
-// Hardcoded offline scenarios to avoid JSON import issues in client-side environments
+// Hardcoded offline scenarios with specific image URLs
 const offlineScenarios = [
   {
     "title": "豪门惊梦",
@@ -15,6 +15,7 @@ const offlineScenarios = [
         "role": "管家",
         "description": "在李家服务了30年，忠心耿耿，最近却因为儿子赌博欠债而焦头烂额。",
         "avatarStyle": "butler",
+        "imageUrl": "https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80",
         "secret": "案发当晚趁停电偷了老爷抽屉里的一块金表去还债，但绝没有杀人。",
         "personality": "沉稳，唯唯诺诺，眼神闪烁，非常维护李家名声。",
         "offlineResponses": [
@@ -30,6 +31,7 @@ const offlineScenarios = [
         "role": "女儿",
         "description": "刚从国外留学回来，和父亲因为遗产继承权和母亲改嫁的问题多次发生激烈争吵。",
         "avatarStyle": "lady",
+        "imageUrl": "https://img.freepik.com/free-photo/portrait-young-woman-with-long-hair_23-2148943809.jpg?auto=format&fit=crop&w=500&q=80",
         "secret": "其实在10点停电前就进入书房杀害了父亲，并取出了电子钟的电池，制造了时间假象。",
         "personality": "高傲，情绪激动，容易流泪，看不起下人。",
         "offlineResponses": [
@@ -45,6 +47,7 @@ const offlineScenarios = [
         "role": "司机",
         "description": "年轻英俊的司机，不仅是司机，还是大小姐的秘密情人。案发当晚行踪诡秘。",
         "avatarStyle": "driver",
+        "imageUrl": "https://img.freepik.com/free-photo/portrait-handsome-man-black-shirt_23-2148943799.jpg?auto=format&fit=crop&w=500&q=80",
         "secret": "案发当晚在后花园等大小姐私会，看见大小姐慌张地从书房窗户跑出来，但选择了包庇。",
         "personality": "轻浮，看似不在乎，实则警惕，非常保护大小姐。",
         "offlineResponses": [
@@ -68,6 +71,7 @@ const offlineScenarios = [
         "role": "乘客",
         "description": "著名的魔术师，擅长逃脱术和密室机关。据说由于欠下巨额高利贷，急需珠宝商手中的那颗蓝宝石。",
         "avatarStyle": "magician",
+        "imageUrl": "https://img.freepik.com/free-photo/magician-holding-playing-cards_23-2149455348.jpg?w=500",
         "secret": "利用钓鱼线和特殊的机关在门外完成了反锁，偷走了宝石并杀人灭口。",
         "personality": "自信，夸夸其谈，喜欢用反问句。",
         "offlineResponses": [
@@ -82,6 +86,7 @@ const offlineScenarios = [
         "role": "乘客",
         "description": "死者的私人医生，随身携带大量药物。最近死者似乎打算解雇他。",
         "avatarStyle": "doctor",
+        "imageUrl": "https://img.freepik.com/free-photo/doctor-with-stethoscope-hands-hospital-background_1423-1.jpg?w=500",
         "secret": "给死者开的药里有安眠成分，方便了凶手作案，但他并没有杀人。",
         "personality": "紧张，神经质，不停地擦眼镜。",
         "offlineResponses": [
@@ -95,6 +100,7 @@ const offlineScenarios = [
         "role": "乘客",
         "description": "一直跟踪报道珠宝商丑闻的记者，为了新闻不择手段。",
         "avatarStyle": "journalist",
+        "imageUrl": "https://img.freepik.com/free-photo/photographer-taking-pictures_23-2148118029.jpg?w=500",
         "secret": "案发时在通风管道偷拍，拍到了魔术师从包厢出来的模糊背影，想以此勒索。",
         "personality": "犀利，好奇，手里总是拿着相机。",
         "offlineResponses": [
@@ -121,6 +127,7 @@ const SUSPECT_SCHEMA: Schema = {
     role: { type: Type.STRING },
     description: { type: Type.STRING },
     avatarStyle: { type: Type.STRING },
+    imageUrl: { type: Type.STRING }, // Support generated image URLs if needed
     secret: { type: Type.STRING },
     personality: { type: Type.STRING },
   },

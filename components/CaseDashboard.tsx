@@ -18,7 +18,10 @@ export const CaseDashboard: React.FC<CaseDashboardProps> = ({
   
   const allInterrogated = caseData.suspects.length === interrogatedSuspectIds.length;
 
-  const getAvatarUrl = (style?: string) => {
+  const getAvatarUrl = (suspect: Suspect) => {
+    if (suspect.imageUrl) return suspect.imageUrl;
+    
+    const style = suspect.avatarStyle;
     if (!style) return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
     const s = style.toLowerCase();
     if (s.includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
@@ -92,7 +95,7 @@ export const CaseDashboard: React.FC<CaseDashboardProps> = ({
 
                   <div className="h-64 overflow-hidden relative">
                     <img 
-                      src={getAvatarUrl(suspect.avatarStyle)} 
+                      src={getAvatarUrl(suspect)} 
                       alt={suspect.name}
                       className={`w-full h-full object-cover transition-transform duration-700 ${isInterrogated ? 'grayscale-[0.8] brightness-75' : 'grayscale-[0.2]'} group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-100`}
                     />
