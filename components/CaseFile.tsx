@@ -1,5 +1,5 @@
 import React from 'react';
-import { CaseData } from '../types';
+import { CaseData, Difficulty } from '../types';
 import { FileText, AlertCircle, HelpCircle } from 'lucide-react';
 
 interface CaseFileProps {
@@ -19,8 +19,8 @@ export const CaseFile: React.FC<CaseFileProps> = ({ caseData, onSolve }) => {
           <h2 className="font-serif text-xl font-bold tracking-wider">CASE FILE #{(Math.random() * 1000).toFixed(0)}</h2>
         </div>
         <span className={`text-xs font-bold px-2 py-1 rounded ${
-          caseData.difficulty === 'Hard' ? 'bg-red-900 text-red-100' : 
-          caseData.difficulty === 'Medium' ? 'bg-amber-800 text-amber-100' : 'bg-green-900 text-green-100'
+          caseData.difficulty === Difficulty.HARD ? 'bg-red-900 text-red-100' : 
+          caseData.difficulty === Difficulty.MEDIUM ? 'bg-amber-800 text-amber-100' : 'bg-green-900 text-green-100'
         }`}>
           {caseData.difficulty.toUpperCase()}
         </span>
@@ -30,7 +30,6 @@ export const CaseFile: React.FC<CaseFileProps> = ({ caseData, onSolve }) => {
         <div className="border-b-2 border-slate-800 pb-4 mb-6">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">{caseData.title}</h1>
           <div className="flex gap-4 text-sm text-slate-600 italic">
-            <span>Theme: {caseData.theme}</span>
             <span>Date: {new Date().toLocaleDateString()}</span>
           </div>
         </div>

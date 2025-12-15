@@ -4,7 +4,7 @@ import { generateCase, investigateCase, evaluateSolution } from './services/gemi
 import { MainMenu } from './components/MainMenu';
 import { CaseDashboard } from './components/CaseDashboard';
 import { InterrogationView } from './components/InterrogationView';
-import { Loader2, Award, ShieldAlert, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Loader2, Award, ShieldAlert, RotateCcw, AlertTriangle, Lock } from 'lucide-react';
 
 const App: React.FC = () => {
   const [phase, setPhase] = useState<GamePhase>(GamePhase.MENU);
@@ -13,7 +13,6 @@ const App: React.FC = () => {
   
   // State for interrogation
   const [selectedSuspectId, setSelectedSuspectId] = useState<string | null>(null);
-  // Store messages per suspect: { suspectId: Message[] }
   const [suspectChats, setSuspectChats] = useState<Record<string, Message[]>>({});
   const [isTyping, setIsTyping] = useState(false);
 
@@ -24,7 +23,6 @@ const App: React.FC = () => {
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Helper: Get list of suspects who have at least one message in history
   const interrogatedSuspectIds = Object.keys(suspectChats).filter(id => suspectChats[id].length > 0);
 
   const startGame = async () => {
@@ -33,7 +31,6 @@ const App: React.FC = () => {
     try {
       const newCase = await generateCase(difficulty);
       setCurrentCase(newCase);
-      // Initialize chat history for each suspect
       const initialChats: Record<string, Message[]> = {};
       newCase.suspects.forEach(s => {
           initialChats[s.id] = [];
@@ -66,7 +63,6 @@ const App: React.FC = () => {
       timestamp: Date.now(),
     };
 
-    // Optimistic update
     setSuspectChats(prev => ({
         ...prev,
         [selectedSuspectId]: [...(prev[selectedSuspectId] || []), userMsg]
@@ -76,7 +72,6 @@ const App: React.FC = () => {
 
     try {
       const currentHistory = suspectChats[selectedSuspectId] || [];
-      // Include user msg in history passed to AI
       const responseText = await investigateCase(currentCase, activeSuspect, [...currentHistory, userMsg], text);
       
       const aiMsg: Message = {
@@ -104,8 +99,7 @@ const App: React.FC = () => {
     const accused = currentCase.suspects.find(s => s.id === accusedSuspectId);
     if(!accused) return;
 
-    // Combine selection + motive for the AI evaluator
-    const fullSolution = `I accuse ${accused.name}. Motive/Method: ${motiveInput || "Based on the evidence found."}`;
+    const fullSolution = `指认凶手: ${accused.name}。 动机/手法: ${motiveInput || "基于已知证据。"}`;
 
     setPhase(GamePhase.LOADING);
     try {
@@ -114,7 +108,7 @@ const App: React.FC = () => {
       setPhase(GamePhase.RESULT);
     } catch (err) {
       setError("提交失败，请重试。");
-      setPhase(GamePhase.SOLVING); // Return to solving screen
+      setPhase(GamePhase.SOLVING); 
     }
   };
   
@@ -127,8 +121,6 @@ const App: React.FC = () => {
     return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
   };
 
-  // Render Logic
-
   if (phase === GamePhase.MENU) {
     return <MainMenu onStart={startGame} difficulty={difficulty} setDifficulty={setDifficulty} />;
   }
@@ -138,7 +130,7 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
         <Loader2 className="w-16 h-16 text-red-600 animate-spin mb-4" />
         <h2 className="text-xl font-serif text-slate-300 animate-pulse tracking-widest uppercase">
-          {evaluation ? "VERIFYING TRUTH..." : "CONSTRUCTING CRIME SCENE..."}
+          {evaluation ? "正在核实真相..." : "正在构建案发现场..."}
         </h2>
       </div>
     );
@@ -164,20 +156,21 @@ const App: React.FC = () => {
              onSendMessage={handleSendMessage}
              onBack={() => setPhase(GamePhase.DASHBOARD)}
              isTyping={isTyping}
+             difficulty={difficulty}
           />
       );
   }
 
   if (phase === GamePhase.SOLVING && currentCase) {
       return (
-          <div className="min-h-screen bg-black flex flex-col relative overflow-hidden animate-fade-in">
+          <div className="min-h-screen bg-black flex flex-col relative overflow-hidden animate-fade-in font-sans">
              {/* Header */}
              <div className="absolute top-0 w-full p-8 text-center z-20">
                 <div className="flex items-center justify-center gap-2 text-red-600 font-bold mb-2">
                     <AlertTriangle size={24} />
-                    <span className="uppercase tracking-[0.2em]">指认凶手</span>
+                    <span className="uppercase tracking-[0.3em] text-xl">指认凶手</span>
                 </div>
-                <p className="text-slate-400 text-sm">只有一次机会，请点击你认为是凶手的人。</p>
+                <p className="text-slate-400 text-sm tracking-wide">只有一次机会，请慎重点击你认为的真凶。</p>
              </div>
 
              {/* Suspects Stage */}
@@ -197,8 +190,8 @@ const App: React.FC = () => {
                         >
                             {/* Guilty Label Overlay */}
                             <div className={`absolute top-[20%] left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
-                                <div className="border-4 border-red-600 text-red-600 px-4 py-2 font-black text-2xl md:text-4xl tracking-widest uppercase bg-black/20 backdrop-blur-sm transform -rotate-12 shadow-[0_0_20px_rgba(220,38,38,0.6)]">
-                                    GUILTY?
+                                <div className="border-[5px] border-red-600 text-red-600 px-6 py-2 font-black text-2xl md:text-5xl tracking-widest uppercase bg-black/20 backdrop-blur-sm transform -rotate-12 shadow-[0_0_30px_rgba(220,38,38,0.8)] whitespace-nowrap font-serif">
+                                    凶手?!
                                 </div>
                             </div>
                             
@@ -214,9 +207,9 @@ const App: React.FC = () => {
                             
                             {/* Name Tag */}
                             <div className={`absolute bottom-0 w-full text-center transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-50'}`}>
-                                <div className={`inline-block px-4 py-1 mb-2 ${isSelected ? 'bg-red-900 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                                    <h3 className="font-serif text-lg">{suspect.name}</h3>
-                                    <p className="text-[10px] uppercase tracking-wider">{suspect.role}</p>
+                                <div className={`inline-block px-6 py-2 mb-2 rounded ${isSelected ? 'bg-red-900/90 text-white' : 'bg-slate-800/80 text-slate-400'}`}>
+                                    <h3 className="font-serif text-xl tracking-wider">{suspect.name}</h3>
+                                    <p className="text-[10px] uppercase tracking-wider opacity-80">{suspect.role}</p>
                                 </div>
                             </div>
                         </div>
@@ -226,38 +219,39 @@ const App: React.FC = () => {
 
              {/* Input & Footer */}
              <div className={`
-                fixed bottom-0 w-full bg-gradient-to-t from-red-950/90 to-black/80 p-6 z-40 backdrop-blur-md border-t border-red-900/30 transition-transform duration-500 ease-out
+                fixed bottom-0 w-full bg-gradient-to-t from-red-950/90 to-black/90 p-8 z-40 backdrop-blur-md border-t border-red-900/30 transition-transform duration-500 ease-out
                 ${accusedSuspectId ? 'translate-y-0' : 'translate-y-full'}
              `}>
-                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-end">
+                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-6 items-end">
                      <div className="flex-1 w-full">
-                         <label className="text-red-500 text-xs font-bold uppercase mb-2 block tracking-wider">
-                             你的推理 (可选)
+                         <label className="text-red-500 text-xs font-bold uppercase mb-2 block tracking-wider flex items-center gap-2">
+                             <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                             你的推理 (Detective's Log)
                          </label>
                          <input 
                             type="text" 
                             value={motiveInput}
                             onChange={(e) => setMotiveInput(e.target.value)}
-                            placeholder="简述动机或作案手法 (选填)..."
-                            className="w-full bg-black/50 border-b border-red-800 text-white px-0 py-2 focus:outline-none focus:border-red-500 placeholder-red-900/50"
+                            placeholder="请简述动机或作案手法 (帮助判定准确度)..."
+                            className="w-full bg-black/50 border-b-2 border-red-900/50 text-white px-2 py-3 focus:outline-none focus:border-red-500 placeholder-red-900/40 text-lg transition-colors"
                          />
                      </div>
                      <button
                         onClick={handleSolveSubmit}
-                        className="bg-red-600 hover:bg-red-500 text-white px-8 py-3 rounded font-bold shadow-lg transition-colors whitespace-nowrap"
+                        className="bg-red-700 hover:bg-red-600 text-white px-10 py-3 rounded-lg font-bold shadow-lg transition-all whitespace-nowrap tracking-wide border border-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
                      >
                         确认指认
                      </button>
                  </div>
              </div>
              
-             {/* Back Button (Only visible if nothing selected or distinct logic) */}
+             {/* Back Button */}
              {!accusedSuspectId && (
                  <button 
                     onClick={() => setPhase(GamePhase.DASHBOARD)}
-                    className="fixed bottom-8 left-8 text-slate-500 hover:text-white transition-colors flex items-center gap-2 z-50"
+                    className="fixed bottom-8 left-8 text-slate-500 hover:text-white transition-colors flex items-center gap-2 z-50 bg-black/20 px-4 py-2 rounded-full hover:bg-black/40 backdrop-blur-sm"
                  >
-                    <RotateCcw size={16} /> 返回思考
+                    <RotateCcw size={16} /> <span className="text-sm font-bold">返回思考</span>
                  </button>
              )}
           </div>
@@ -268,31 +262,38 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-          <div className={`p-10 text-center ${evaluation.correct ? 'bg-green-900/20' : 'bg-red-900/20'}`}>
-            <div className="flex justify-center mb-6">
+          <div className={`p-10 text-center ${evaluation.correct ? 'bg-green-900/20' : 'bg-red-900/20'} relative overflow-hidden`}>
+            {/* BG pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+            
+            <div className="flex justify-center mb-6 relative z-10">
               {evaluation.correct ? (
-                <div className="p-4 bg-green-900/30 rounded-full"><Award size={64} className="text-green-500" /></div>
+                <div className="p-5 bg-green-900/30 rounded-full ring-2 ring-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.3)]"><Award size={64} className="text-green-500" /></div>
               ) : (
-                <div className="p-4 bg-red-900/30 rounded-full"><ShieldAlert size={64} className="text-red-500" /></div>
+                <div className="p-5 bg-red-900/30 rounded-full ring-2 ring-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.3)]"><ShieldAlert size={64} className="text-red-500" /></div>
               )}
             </div>
-            <h1 className="text-4xl font-serif font-bold text-slate-100 mb-2 tracking-wide">
-              {evaluation.correct ? "结案" : "推断错误"}
+            <h1 className="text-5xl font-serif font-bold text-slate-100 mb-2 tracking-wide relative z-10">
+              {evaluation.correct ? "结案成功" : "推断错误"}
             </h1>
-            <p className={`text-xl font-mono mt-4 ${evaluation.correct ? 'text-green-400' : 'text-red-400'}`}>
-              匹配度: {evaluation.percentage}%
+            <p className={`text-xl font-mono mt-4 font-bold ${evaluation.correct ? 'text-green-400' : 'text-red-400'} relative z-10`}>
+              真相还原度: {evaluation.percentage}%
             </p>
           </div>
 
           <div className="p-8 space-y-6">
-            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-              <h3 className="text-red-500 text-xs uppercase tracking-widest font-bold mb-3">侦探评估</h3>
-              <p className="text-slate-300 leading-relaxed text-lg">{evaluation.feedback}</p>
+            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-inner">
+              <h3 className="text-amber-500 text-xs uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
+                  <Award size={14} /> 侦探评估
+              </h3>
+              <p className="text-slate-300 leading-relaxed text-lg font-serif">{evaluation.feedback}</p>
             </div>
 
             <div className="bg-black/40 p-6 rounded-xl border border-slate-800">
-              <h3 className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3">案件真相</h3>
-              <p className="text-slate-400 leading-relaxed italic">
+              <h3 className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
+                   <Lock size={14} /> 案件真相 (档案解密)
+              </h3>
+              <p className="text-slate-400 leading-relaxed italic text-sm">
                 {currentCase?.solution}
               </p>
             </div>
@@ -306,7 +307,7 @@ const App: React.FC = () => {
                 setEvaluation(null);
                 setCurrentCase(null);
               }}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 mt-4"
+              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mt-4 hover:shadow-lg border border-slate-700 hover:border-slate-600"
             >
               <RotateCcw size={20} /> 返回侦探社
             </button>

@@ -13,6 +13,11 @@ export enum Difficulty {
   HARD = '困难',
 }
 
+export interface OfflineResponse {
+  keywords: string[];
+  response: string;
+}
+
 export interface Suspect {
   id: string;
   name: string;
@@ -21,6 +26,7 @@ export interface Suspect {
   avatarStyle: string; // prompting hint for UI or placeholder choice
   secret: string; // Hidden info
   personality: string;
+  offlineResponses?: OfflineResponse[]; // For offline mode interaction
 }
 
 export interface CaseData {
