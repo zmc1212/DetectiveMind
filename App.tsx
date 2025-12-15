@@ -4,7 +4,7 @@ import { generateCase, investigateCase, evaluateSolution } from './services/gemi
 import { MainMenu } from './components/MainMenu';
 import { CaseDashboard } from './components/CaseDashboard';
 import { InterrogationView } from './components/InterrogationView';
-import { Loader2, Award, ShieldAlert, RotateCcw, AlertTriangle, Lock } from 'lucide-react';
+import { Loader2, Award, ShieldAlert, RotateCcw, AlertTriangle, Fingerprint } from 'lucide-react';
 
 const App: React.FC = () => {
   const [phase, setPhase] = useState<GamePhase>(GamePhase.MENU);
@@ -115,12 +115,10 @@ const App: React.FC = () => {
   const getAvatarUrl = (suspect: Suspect) => {
     if (suspect.imageUrl) return suspect.imageUrl;
 
-    const style = suspect.avatarStyle;
-    if (!style) return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
-    const s = style.toLowerCase();
-    if (s.includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
-    if (s.includes('lady')) return 'https://img.freepik.com/free-photo/portrait-young-woman-with-long-hair_23-2148943809.jpg?auto=format&fit=crop&w=500&q=80';
-    if (s.includes('driver')) return 'https://img.freepik.com/free-photo/portrait-handsome-man-black-shirt_23-2148943799.jpg?auto=format&fit=crop&w=500&q=80';
+    const style = suspect.avatarStyle || '';
+    if (style.toLowerCase().includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
+    if (style.toLowerCase().includes('lady')) return 'https://img.freepik.com/free-photo/portrait-young-woman-with-long-hair_23-2148943809.jpg?auto=format&fit=crop&w=500&q=80';
+    if (style.toLowerCase().includes('driver')) return 'https://img.freepik.com/free-photo/portrait-handsome-man-black-shirt_23-2148943799.jpg?auto=format&fit=crop&w=500&q=80';
     return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
   };
 
@@ -130,11 +128,18 @@ const App: React.FC = () => {
 
   if (phase === GamePhase.LOADING) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-        <Loader2 className="w-16 h-16 text-red-600 animate-spin mb-4" />
-        <h2 className="text-xl font-serif text-slate-300 animate-pulse tracking-widest uppercase">
-          {evaluation ? "正在核实真相..." : "正在构建案发现场..."}
-        </h2>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
+        {/* Abstract Loader Background */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-black to-black opacity-50"></div>
+        <div className="relative z-10 flex flex-col items-center">
+             <div className="relative">
+                 <Loader2 className="w-16 h-16 text-red-600 animate-spin" />
+                 <div className="absolute inset-0 bg-red-600 blur-xl opacity-30 animate-pulse"></div>
+             </div>
+             <h2 className="text-xl font-serif text-slate-300 mt-8 tracking-[0.3em] uppercase animate-pulse">
+               {evaluation ? "正在验证推理..." : "正在构建案发现场..."}
+             </h2>
+        </div>
       </div>
     );
   }
@@ -167,34 +172,49 @@ const App: React.FC = () => {
   if (phase === GamePhase.SOLVING && currentCase) {
       return (
           <div className="min-h-screen bg-black flex flex-col relative overflow-hidden animate-fade-in font-sans">
+             {/* Dramatic Lighting Overlay */}
+             <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none z-20"></div>
+             
              {/* Header */}
-             <div className="absolute top-0 w-full p-8 text-center z-20">
-                <div className="flex items-center justify-center gap-2 text-red-600 font-bold mb-2">
-                    <AlertTriangle size={24} />
-                    <span className="uppercase tracking-[0.3em] text-xl">指认凶手</span>
+             <div className="absolute top-0 w-full p-8 text-center z-30">
+                <div className="inline-block border-2 border-red-800 p-4 bg-black/50 backdrop-blur-md">
+                    <div className="flex items-center justify-center gap-3 text-red-600 font-bold mb-1">
+                        <AlertTriangle size={24} />
+                        <span className="uppercase tracking-[0.3em] text-2xl font-serif">最终审判</span>
+                        <AlertTriangle size={24} />
+                    </div>
+                    <p className="text-slate-500 text-xs tracking-widest uppercase">请指认真凶。一旦选定，无法回头。</p>
                 </div>
-                <p className="text-slate-400 text-sm tracking-wide">只有一次机会，请慎重点击你认为的真凶。</p>
              </div>
 
-             {/* Suspects Stage */}
+             {/* Suspects Stage - Spotlight Effect */}
              <div className="flex-1 flex items-center justify-center gap-4 md:gap-12 px-4 relative z-10">
                 {currentCase.suspects.map((suspect) => {
                     const isSelected = accusedSuspectId === suspect.id;
+                    const isOtherSelected = accusedSuspectId !== null && !isSelected;
+                    
                     return (
                         <div 
                            key={suspect.id}
-                           className="group relative cursor-pointer transition-all duration-500"
+                           className={`
+                                group relative cursor-pointer transition-all duration-700 ease-out
+                                ${isSelected ? 'scale-110 z-40 grayscale-0' : 'scale-95 grayscale hover:grayscale-[0.5] hover:scale-100'}
+                                ${isOtherSelected ? 'opacity-30 blur-sm scale-90' : 'opacity-100'}
+                           `}
                            onClick={() => setAccusedSuspectId(suspect.id)}
-                           style={{ 
-                               transform: isSelected ? 'scale(1.1) translateY(-20px)' : 'scale(1)',
-                               zIndex: isSelected ? 30 : 10,
-                               filter: isSelected ? 'none' : accusedSuspectId ? 'grayscale(100%) brightness(30%)' : 'grayscale(100%) brightness(70%)'
-                           }}
                         >
+                            {/* Spotlight Beam */}
+                            <div className={`
+                                absolute -top-[50%] left-1/2 -translate-x-1/2 w-[200px] h-[1000px] 
+                                bg-gradient-to-b from-white/10 via-white/5 to-transparent pointer-events-none
+                                transition-opacity duration-700 transform -rotate-12 origin-top
+                                ${isSelected ? 'opacity-100' : 'opacity-0'}
+                            `}></div>
+
                             {/* Guilty Label Overlay */}
-                            <div className={`absolute top-[20%] left-1/2 -translate-x-1/2 z-50 transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-0'}`}>
-                                <div className="border-[5px] border-red-600 text-red-600 px-6 py-2 font-black text-2xl md:text-5xl tracking-widest uppercase bg-black/20 backdrop-blur-sm transform -rotate-12 shadow-[0_0_30px_rgba(220,38,38,0.8)] whitespace-nowrap font-serif">
-                                    凶手?!
+                            <div className={`absolute top-[30%] left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${isSelected ? 'opacity-100 scale-100' : 'opacity-0 scale-150'}`}>
+                                <div className="border-[6px] border-red-600 text-red-600 px-6 py-2 font-black text-3xl md:text-5xl tracking-widest uppercase bg-black/40 backdrop-blur-sm transform -rotate-12 shadow-[0_0_50px_rgba(220,38,38,0.8)] whitespace-nowrap font-serif mix-blend-hard-light">
+                                    凶手
                                 </div>
                             </div>
                             
@@ -203,17 +223,16 @@ const App: React.FC = () => {
                                 src={getAvatarUrl(suspect)}
                                 alt={suspect.name}
                                 className={`
-                                    h-[50vh] md:h-[65vh] object-cover transition-all duration-500 mask-image-gradient
-                                    ${isSelected ? 'drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]' : 'group-hover:brightness-110'}
+                                    h-[50vh] md:h-[65vh] object-cover transition-all duration-700
+                                    mask-image-gradient drop-shadow-2xl
+                                    ${isSelected ? 'brightness-110 contrast-125' : 'brightness-50 contrast-100'}
                                 `}
                             />
                             
                             {/* Name Tag */}
-                            <div className={`absolute bottom-0 w-full text-center transition-opacity duration-300 ${isSelected ? 'opacity-100' : 'opacity-50'}`}>
-                                <div className={`inline-block px-6 py-2 mb-2 rounded ${isSelected ? 'bg-red-900/90 text-white' : 'bg-slate-800/80 text-slate-400'}`}>
-                                    <h3 className="font-serif text-xl tracking-wider">{suspect.name}</h3>
-                                    <p className="text-[10px] uppercase tracking-wider opacity-80">{suspect.role}</p>
-                                </div>
+                            <div className={`absolute bottom-10 w-full text-center transition-all duration-500 ${isSelected ? 'opacity-100 translate-y-0' : 'opacity-50 translate-y-4'}`}>
+                                <h3 className="font-serif text-3xl text-slate-100 tracking-wider mb-1 text-shadow-lg">{suspect.name}</h3>
+                                <p className="text-xs uppercase tracking-[0.3em] text-red-500 font-bold">{suspect.role}</p>
                             </div>
                         </div>
                     );
@@ -222,26 +241,27 @@ const App: React.FC = () => {
 
              {/* Input & Footer */}
              <div className={`
-                fixed bottom-0 w-full bg-gradient-to-t from-red-950/90 to-black/90 p-8 z-40 backdrop-blur-md border-t border-red-900/30 transition-transform duration-500 ease-out
+                fixed bottom-0 w-full bg-gradient-to-t from-red-950 to-black p-10 z-50 border-t border-red-900/50 transition-transform duration-500 ease-out shadow-[0_-20px_50px_rgba(0,0,0,0.8)]
                 ${accusedSuspectId ? 'translate-y-0' : 'translate-y-full'}
              `}>
-                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-6 items-end">
+                 <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-8 items-end">
                      <div className="flex-1 w-full">
-                         <label className="text-red-500 text-xs font-bold uppercase mb-2 block tracking-wider flex items-center gap-2">
-                             <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                             你的推理 (Detective's Log)
+                         <label className="text-red-500 text-xs font-bold uppercase mb-3 block tracking-[0.2em] flex items-center gap-2">
+                             <Fingerprint size={16} className="animate-pulse" />
+                             案件分析 / 动机
                          </label>
                          <input 
                             type="text" 
                             value={motiveInput}
                             onChange={(e) => setMotiveInput(e.target.value)}
-                            placeholder="请简述动机或作案手法 (帮助判定准确度)..."
-                            className="w-full bg-black/50 border-b-2 border-red-900/50 text-white px-2 py-3 focus:outline-none focus:border-red-500 placeholder-red-900/40 text-lg transition-colors"
+                            placeholder="描述作案动机或手法..."
+                            className="w-full bg-black/40 border-b-2 border-red-900 text-white px-4 py-4 focus:outline-none focus:border-red-500 placeholder-slate-600 text-xl font-serif transition-colors"
+                            autoFocus
                          />
                      </div>
                      <button
                         onClick={handleSolveSubmit}
-                        className="bg-red-700 hover:bg-red-600 text-white px-10 py-3 rounded-lg font-bold shadow-lg transition-all whitespace-nowrap tracking-wide border border-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                        className="bg-red-700 hover:bg-red-600 text-white px-12 py-4 rounded-sm font-bold shadow-lg transition-all whitespace-nowrap tracking-widest border border-red-500 hover:shadow-[0_0_30px_rgba(220,38,38,0.5)] uppercase"
                      >
                         确认指认
                      </button>
@@ -252,9 +272,9 @@ const App: React.FC = () => {
              {!accusedSuspectId && (
                  <button 
                     onClick={() => setPhase(GamePhase.DASHBOARD)}
-                    className="fixed bottom-8 left-8 text-slate-500 hover:text-white transition-colors flex items-center gap-2 z-50 bg-black/20 px-4 py-2 rounded-full hover:bg-black/40 backdrop-blur-sm"
+                    className="fixed bottom-8 left-8 text-slate-500 hover:text-white transition-colors flex items-center gap-2 z-50 bg-black/20 px-6 py-3 rounded-full hover:bg-black/60 backdrop-blur-sm border border-transparent hover:border-slate-700"
                  >
-                    <RotateCcw size={16} /> <span className="text-sm font-bold">返回思考</span>
+                    <RotateCcw size={16} /> <span className="text-xs font-bold uppercase tracking-wider">取消并返回</span>
                  </button>
              )}
           </div>
@@ -263,40 +283,52 @@ const App: React.FC = () => {
 
   if (phase === GamePhase.RESULT && evaluation) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <div className="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
-          <div className={`p-10 text-center ${evaluation.correct ? 'bg-green-900/20' : 'bg-red-900/20'} relative overflow-hidden`}>
-            {/* BG pattern */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none" style={{backgroundImage: 'radial-gradient(circle at center, white 1px, transparent 1px)', backgroundSize: '20px 20px'}}></div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 overflow-hidden relative">
+        {/* Background Ambience */}
+        <div className={`absolute inset-0 opacity-20 transition-colors duration-1000 ${evaluation.correct ? 'bg-green-900' : 'bg-red-900'}`}></div>
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+
+        <div className="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-none shadow-2xl overflow-hidden animate-slide-up relative z-10">
+          <div className={`p-16 text-center ${evaluation.correct ? 'bg-gradient-to-b from-green-900/40 to-slate-900' : 'bg-gradient-to-b from-red-900/40 to-slate-900'} relative`}>
             
-            <div className="flex justify-center mb-6 relative z-10">
+            <div className="flex justify-center mb-8 relative z-10">
               {evaluation.correct ? (
-                <div className="p-5 bg-green-900/30 rounded-full ring-2 ring-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.3)]"><Award size={64} className="text-green-500" /></div>
+                <div className="p-8 bg-green-950 rounded-full border-4 border-green-600 shadow-[0_0_50px_rgba(34,197,94,0.5)] animate-float">
+                    <Award size={80} className="text-green-500" />
+                </div>
               ) : (
-                <div className="p-5 bg-red-900/30 rounded-full ring-2 ring-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.3)]"><ShieldAlert size={64} className="text-red-500" /></div>
+                <div className="p-8 bg-red-950 rounded-full border-4 border-red-600 shadow-[0_0_50px_rgba(239,68,68,0.5)] animate-pulse">
+                    <ShieldAlert size={80} className="text-red-500" />
+                </div>
               )}
             </div>
-            <h1 className="text-5xl font-serif font-bold text-slate-100 mb-2 tracking-wide relative z-10">
-              {evaluation.correct ? "结案成功" : "推断错误"}
+            
+            <h1 className="text-6xl md:text-7xl font-serif font-bold text-slate-100 mb-4 tracking-tighter relative z-10 text-shadow-lg">
+              {evaluation.correct ? "结案：成功破案" : "结案：悬案未破"}
             </h1>
-            <p className={`text-xl font-mono mt-4 font-bold ${evaluation.correct ? 'text-green-400' : 'text-red-400'} relative z-10`}>
-              真相还原度: {evaluation.percentage}%
-            </p>
+            
+            <div className="flex justify-center items-center gap-4 mt-6">
+                <div className="h-px w-12 bg-slate-600"></div>
+                <p className={`text-2xl font-mono font-bold ${evaluation.correct ? 'text-green-400' : 'text-red-400'} tracking-widest`}>
+                准确度: {evaluation.percentage}%
+                </p>
+                <div className="h-px w-12 bg-slate-600"></div>
+            </div>
           </div>
 
-          <div className="p-8 space-y-6">
-            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 shadow-inner">
-              <h3 className="text-amber-500 text-xs uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
-                  <Award size={14} /> 侦探评估
+          <div className="p-10 space-y-8 bg-slate-950 relative">
+            <div className="p-8 border-l-4 border-amber-600 bg-slate-900/50">
+              <h3 className="text-amber-600 text-xs uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2">
+                  <Award size={16} /> 侦探评估
               </h3>
-              <p className="text-slate-300 leading-relaxed text-lg font-serif">{evaluation.feedback}</p>
+              <p className="text-slate-300 leading-loose text-lg font-serif italic">"{evaluation.feedback}"</p>
             </div>
 
-            <div className="bg-black/40 p-6 rounded-xl border border-slate-800">
-              <h3 className="text-slate-500 text-xs uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
-                   <Lock size={14} /> 案件真相 (档案解密)
+            <div className="p-8 border-l-4 border-slate-700 bg-black/40">
+              <h3 className="text-slate-500 text-xs uppercase tracking-[0.2em] font-bold mb-4 flex items-center gap-2">
+                   <Fingerprint size={16} /> 绝密档案：真相
               </h3>
-              <p className="text-slate-400 leading-relaxed italic text-sm">
+              <p className="text-slate-400 leading-relaxed text-sm font-mono opacity-80">
                 {currentCase?.solution}
               </p>
             </div>
@@ -310,9 +342,12 @@ const App: React.FC = () => {
                 setEvaluation(null);
                 setCurrentCase(null);
               }}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 mt-4 hover:shadow-lg border border-slate-700 hover:border-slate-600"
+              className="w-full group bg-transparent border border-slate-700 text-slate-400 hover:text-white font-bold py-5 mt-6 transition-all hover:bg-slate-900 hover:border-slate-500 uppercase tracking-[0.2em] text-sm"
             >
-              <RotateCcw size={20} /> 返回侦探社
+              <span className="flex items-center justify-center gap-3">
+                  <RotateCcw size={18} className="group-hover:-rotate-180 transition-transform duration-500" /> 
+                  返回侦探社
+              </span>
             </button>
           </div>
         </div>

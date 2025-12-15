@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CaseData, Suspect } from '../types';
-import { MapPin, User, CheckCircle2, Lock, FileText } from 'lucide-react';
+import { MapPin, User, CheckCircle2, Lock, FileText, Search } from 'lucide-react';
+import { playTypingSound } from '../utils/sound';
 
 interface CaseDashboardProps {
   caseData: CaseData;
@@ -15,105 +16,162 @@ export const CaseDashboard: React.FC<CaseDashboardProps> = ({
     onSolve,
     interrogatedSuspectIds 
 }) => {
+  const [typedIntro, setTypedIntro] = useState('');
   
+  // Typewriter effect for introduction
+  useEffect(() => {
+    let index = 0;
+    const speed = 30; 
+    setTypedIntro('');
+    
+    const timer = setInterval(() => {
+      if (index < caseData.introduction.length) {
+        setTypedIntro((prev) => prev + caseData.introduction.charAt(index));
+        // Play sound every few characters to avoid being too annoying
+        if (index % 2 === 0) playTypingSound();
+        index++;
+      } else {
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [caseData.introduction]);
+
   const allInterrogated = caseData.suspects.length === interrogatedSuspectIds.length;
 
   const getAvatarUrl = (suspect: Suspect) => {
     if (suspect.imageUrl) return suspect.imageUrl;
-    
-    const style = suspect.avatarStyle;
-    if (!style) return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
-    const s = style.toLowerCase();
-    if (s.includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
-    if (s.includes('lady')) return 'https://img.freepik.com/free-photo/portrait-young-woman-with-long-hair_23-2148943809.jpg?auto=format&fit=crop&w=500&q=80';
-    if (s.includes('driver')) return 'https://img.freepik.com/free-photo/portrait-handsome-man-black-shirt_23-2148943799.jpg?auto=format&fit=crop&w=500&q=80';
+    const style = suspect.avatarStyle || '';
+    if (style.toLowerCase().includes('butler')) return 'https://img.freepik.com/free-photo/portrait-senior-man-wearing-suit_23-2148943825.jpg?auto=format&fit=crop&w=500&q=80';
+    if (style.toLowerCase().includes('lady')) return 'https://img.freepik.com/free-photo/portrait-young-woman-with-long-hair_23-2148943809.jpg?auto=format&fit=crop&w=500&q=80';
+    if (style.toLowerCase().includes('driver')) return 'https://img.freepik.com/free-photo/portrait-handsome-man-black-shirt_23-2148943799.jpg?auto=format&fit=crop&w=500&q=80';
     return 'https://img.freepik.com/free-vector/mysterious-mafia-man-smoking-cigarette_52683-34828.jpg';
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-200 animate-fade-in pb-20 font-sans">
-      {/* Header / Scene Banner */}
-      <div className="relative w-full h-80 md:h-96 overflow-hidden border-b border-red-900/30 group">
+    <div className="min-h-screen bg-[#020617] text-slate-200 animate-fade-in pb-24 font-sans selection:bg-red-900 selection:text-white">
+      {/* Dynamic Header / Scene Banner */}
+      <div className="relative w-full h-[50vh] overflow-hidden group border-b border-slate-900">
+        <div className="absolute inset-0 bg-black/50 z-10"></div>
         <img 
             src="https://img.freepik.com/free-photo/vintage-room-interior-with-old-books-scrolls_23-2149429415.jpg?t=st=1738596000~exp=1738599600~hmac=e2c9e7a8f1b4a8a1b4a8a1b4a8a1b4a8a1b4a8a1b4a8a1b4a8a1b4a8a1" 
             alt="Crime Scene" 
-            className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000"
+            className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-[20s] ease-in-out"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/60 to-transparent z-20"></div>
         
-        <div className="absolute bottom-0 left-0 p-8 max-w-4xl">
-           <div className="flex items-center gap-2 text-red-500 font-bold tracking-widest text-xs uppercase mb-2">
-             <MapPin size={14} />
-             案发现场 / CRIME SCENE
+        <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 z-30 max-w-5xl mx-auto flex flex-col md:flex-row items-end gap-8">
+           <div className="flex-1">
+              <div className="flex items-center gap-3 text-red-500 font-bold tracking-[0.2em] text-xs uppercase mb-4 animate-slide-up">
+                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                 <MapPin size={14} />
+                 案发现场
+              </div>
+              <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-6 shadow-black drop-shadow-2xl tracking-tight leading-none animate-slide-up" style={{animationDelay: '0.1s'}}>
+                {caseData.title}
+              </h1>
+              
+              <div className="relative bg-slate-900/60 backdrop-blur-md border border-slate-700/50 p-6 rounded-lg shadow-xl animate-slide-up" style={{animationDelay: '0.2s'}}>
+                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
+                  <p className="text-slate-300 text-sm md:text-base leading-relaxed font-mono">
+                    <span className="text-red-400 mr-2">{'>'}</span>
+                    {typedIntro}
+                    <span className="inline-block w-2 h-4 bg-red-500 ml-1 animate-pulse"></span>
+                  </p>
+              </div>
            </div>
-           <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4 shadow-black drop-shadow-md tracking-wide">
-             {caseData.title}
-           </h1>
-           <div className="flex flex-wrap gap-4 mb-5 text-xs font-mono text-slate-300">
-             <span className="bg-red-950/60 px-3 py-1 rounded border border-red-900/50 text-red-200">死者: 李老爷</span>
-             <span className="bg-slate-800/60 px-3 py-1 rounded border border-slate-700">死因: 头部钝器重击</span>
-             <span className="bg-amber-900/40 px-3 py-1 rounded border border-amber-900/30 text-amber-200">难度: {caseData.difficulty}</span>
-           </div>
-           <div className="relative">
-               <div className="absolute -left-4 top-0 bottom-0 w-1 bg-red-600 rounded-full"></div>
-               <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl bg-black/40 p-4 rounded-r-lg backdrop-blur-sm border border-slate-800/50 shadow-xl">
-                 {caseData.introduction}
-               </p>
+           
+           <div className="flex flex-col gap-3 animate-slide-up" style={{animationDelay: '0.3s'}}>
+              <div className="bg-slate-800/80 px-4 py-2 rounded text-xs font-mono border border-slate-700 text-slate-400">
+                死者: <span className="text-white">李老爷</span>
+              </div>
+              <div className="bg-slate-800/80 px-4 py-2 rounded text-xs font-mono border border-slate-700 text-slate-400">
+                死因: <span className="text-white">头部重击</span>
+              </div>
+              <div className="bg-red-900/30 px-4 py-2 rounded text-xs font-mono border border-red-900/50 text-red-300">
+                难度: {caseData.difficulty}
+              </div>
            </div>
         </div>
       </div>
 
-      {/* Suspects List */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <h2 className="text-xl font-bold text-slate-300 mb-8 flex items-center justify-between border-b border-slate-800 pb-4">
-           <div className="flex items-center gap-2">
-             <User size={20} className="text-red-500" /> 
-             <span className="tracking-wide">嫌疑人名单</span>
-             <span className="text-xs text-slate-500 font-normal ml-2">(点击头像进行审讯)</span>
+      {/* Suspects Dossier Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-16">
+        <div className="flex items-center justify-between mb-12 border-b border-slate-800 pb-4">
+           <h2 className="text-2xl font-serif font-bold text-slate-200 flex items-center gap-3">
+             <div className="bg-slate-800 p-2 rounded-lg">
+                <User size={24} className="text-red-500" />
+             </div>
+             <span className="tracking-wide">嫌疑人档案</span>
+           </h2>
+           
+           <div className="flex items-center gap-3">
+              <span className="text-slate-500 text-xs uppercase tracking-wider font-bold">调查进度</span>
+              <div className="h-2 w-32 bg-slate-800 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-1000 ${allInterrogated ? 'bg-green-500' : 'bg-red-600'}`}
+                  style={{ width: `${(interrogatedSuspectIds.length / caseData.suspects.length) * 100}%` }}
+                ></div>
+              </div>
+              <span className="text-slate-400 font-mono text-sm">{interrogatedSuspectIds.length}/{caseData.suspects.length}</span>
            </div>
-           <div className="text-sm font-normal text-slate-500 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">
-              审讯进度: <span className={allInterrogated ? "text-green-500 font-bold" : "text-amber-500 font-bold"}>{interrogatedSuspectIds.length}/{caseData.suspects.length}</span>
-           </div>
-        </h2>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {caseData.suspects.map((suspect) => {
+          {caseData.suspects.map((suspect, idx) => {
             const isInterrogated = interrogatedSuspectIds.includes(suspect.id);
             return (
                 <div 
                   key={suspect.id}
                   onClick={() => onSelectSuspect(suspect)}
-                  className="group cursor-pointer bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:border-red-500/50 transition-all duration-300 hover:transform hover:-translate-y-2 shadow-xl hover:shadow-2xl relative"
+                  className="group relative cursor-pointer perspective-1000 animate-slide-up"
+                  style={{ animationDelay: `${0.2 + (idx * 0.1)}s` }}
                 >
-                  {/* Status Badge */}
-                  {isInterrogated && (
-                      <div className="absolute top-3 right-3 z-20 bg-green-900/90 text-green-200 px-2 py-1 rounded flex items-center gap-1 backdrop-blur-md border border-green-500/30 shadow-lg">
-                          <CheckCircle2 size={14} />
-                          <span className="text-xs font-bold">已完成</span>
+                  {/* Card Container with Paper Style */}
+                  <div className="relative bg-slate-900 border border-slate-700 hover:border-red-500/50 rounded-sm transition-all duration-300 group-hover:-translate-y-2 shadow-lg group-hover:shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden h-full flex flex-col">
+                    
+                    {/* Top Secret Stamp */}
+                    {isInterrogated && (
+                       <div className="absolute top-4 right-4 z-20 border-2 border-green-500/50 text-green-500 px-2 py-1 text-xs font-black uppercase tracking-widest rotate-12 opacity-80 backdrop-blur-sm shadow-sm">
+                          已审讯
+                       </div>
+                    )}
+                    
+                    {/* Image Area */}
+                    <div className="h-72 overflow-hidden relative">
+                      <div className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/10 z-10 transition-colors duration-300"></div>
+                      <img 
+                        src={getAvatarUrl(suspect)} 
+                        alt={suspect.name}
+                        className={`w-full h-full object-cover transition-transform duration-700 ${isInterrogated ? 'grayscale contrast-125' : 'grayscale-[0.5]'} group-hover:scale-110`}
+                      />
+                      
+                      {/* Overlay Info */}
+                      <div className="absolute bottom-0 left-0 w-full p-4 bg-gradient-to-t from-black/90 to-transparent z-10">
+                         <h3 className="text-3xl font-serif font-bold text-white tracking-wide mb-1">{suspect.name}</h3>
+                         <div className="flex items-center gap-2">
+                            <span className="bg-slate-100 text-slate-900 text-[10px] font-bold px-1.5 py-0.5 uppercase tracking-widest rounded-sm">
+                                {suspect.role}
+                            </span>
+                         </div>
                       </div>
-                  )}
+                    </div>
 
-                  <div className="h-64 overflow-hidden relative">
-                    <img 
-                      src={getAvatarUrl(suspect)} 
-                      alt={suspect.name}
-                      className={`w-full h-full object-cover transition-transform duration-700 ${isInterrogated ? 'grayscale-[0.8] brightness-75' : 'grayscale-[0.2]'} group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-100`}
-                    />
-                    <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="flex justify-between items-end border-b border-slate-700 pb-2 mb-2">
-                          <h3 className="text-2xl font-serif font-bold text-white tracking-wider">{suspect.name}</h3>
-                          <span className="bg-red-900/30 text-red-400 border border-red-900/50 px-2 py-0.5 text-[10px] uppercase tracking-wider font-bold rounded">{suspect.role}</span>
-                      </div>
+                    {/* Description Area (Paper texture feel) */}
+                    <div className="p-6 bg-[#0f172a] relative flex-1 border-t border-slate-800">
+                       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                       <FileText size={16} className="text-slate-600 mb-3 group-hover:text-red-500 transition-colors" />
+                       <p className="text-slate-400 text-sm leading-relaxed font-serif line-clamp-3 group-hover:text-slate-300">
+                          {suspect.description}
+                       </p>
+                       
+                       <div className="mt-4 pt-4 border-t border-slate-800/50 flex justify-end">
+                          <span className="text-xs font-bold text-red-500 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-2 group-hover:translate-x-0 duration-300">
+                             审讯 <Search size={12} />
+                          </span>
+                       </div>
                     </div>
-                  </div>
-                  <div className="p-5 pt-0 relative">
-                    <div className="absolute top-0 right-4 -mt-3 bg-slate-800 rounded-full p-2 border border-slate-700 group-hover:border-red-500/50 transition-colors">
-                        <FileText size={16} className="text-slate-400 group-hover:text-red-400" />
-                    </div>
-                    <p className="text-slate-400 text-sm leading-relaxed mt-2 min-h-[3rem] line-clamp-2 group-hover:text-slate-300 transition-colors">
-                      {suspect.description}
-                    </p>
                   </div>
                 </div>
             );
@@ -121,22 +179,28 @@ export const CaseDashboard: React.FC<CaseDashboardProps> = ({
         </div>
       </div>
       
-      {/* Solve Button Fixed Bottom */}
-      <div className="fixed bottom-0 left-0 w-full p-4 bg-[#0f172a]/95 backdrop-blur-md border-t border-slate-800 flex justify-center z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
-         {allInterrogated ? (
-             <button 
-               onClick={onSolve}
-               className="bg-red-700 hover:bg-red-600 text-white px-10 py-3 rounded-lg font-bold border border-red-500 transition-all w-full max-w-md shadow-[0_0_20px_rgba(220,38,38,0.3)] animate-pulse hover:animate-none flex items-center justify-center gap-2 transform hover:scale-105"
-             >
-               <CheckCircle2 size={18} />
-               <span>指认凶手 (提交结案报告)</span>
-             </button>
-         ) : (
-             <div className="bg-slate-900/80 text-slate-500 px-8 py-3 rounded-lg font-bold border border-slate-700 w-full max-w-md flex items-center justify-center gap-2 cursor-not-allowed opacity-70">
-                 <Lock size={16} />
-                 <span>请先完成所有审讯 ({interrogatedSuspectIds.length}/{caseData.suspects.length})</span>
-             </div>
-         )}
+      {/* Solve Button - Floating Bottom Bar */}
+      <div className="fixed bottom-0 left-0 w-full z-50">
+         <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/95 to-transparent h-32 pointer-events-none"></div>
+         <div className="relative flex justify-center pb-8 pt-10">
+             {allInterrogated ? (
+                 <button 
+                   onClick={onSolve}
+                   className="relative group overflow-hidden bg-red-700 text-white px-12 py-4 rounded-lg font-bold shadow-[0_0_30px_rgba(185,28,28,0.4)] transition-all hover:scale-105 hover:shadow-[0_0_50px_rgba(185,28,28,0.6)]"
+                 >
+                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                   <div className="flex items-center gap-3 relative z-10">
+                     <CheckCircle2 size={20} />
+                     <span className="tracking-[0.1em] text-lg">指认凶手</span>
+                   </div>
+                 </button>
+             ) : (
+                 <div className="bg-slate-900/90 backdrop-blur border border-slate-800 text-slate-500 px-8 py-3 rounded-full font-mono text-sm flex items-center gap-3 shadow-lg">
+                     <Lock size={14} />
+                     <span>需要完成所有嫌疑人审讯 ({interrogatedSuspectIds.length}/{caseData.suspects.length})</span>
+                 </div>
+             )}
+         </div>
       </div>
     </div>
   );
