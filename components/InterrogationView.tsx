@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Suspect, Message, Difficulty } from '../types';
-import { ArrowLeft, Send, History, MessageSquare, ChevronRight, Mic, Volume2 } from 'lucide-react';
+import { ArrowLeft, Send, History, ChevronRight, Volume2 } from 'lucide-react';
 import { playTypingSound } from '../utils/sound';
 
 interface InterrogationViewProps {
@@ -117,107 +117,90 @@ export const InterrogationView: React.FC<InterrogationViewProps> = ({
       {/* Cinematic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
          <img 
-            src="https://img.freepik.com/free-photo/empty-corridor-background_23-2149396112.jpg" 
-            className="w-full h-full object-cover opacity-10 blur-sm mix-blend-luminosity"
-            alt="Background"
+            src="https://img.freepik.com/free-photo/dark-empty-room-with-concrete-floor_158538-20894.jpg" 
+            className="w-full h-full object-cover opacity-60"
+            alt="Interrogation Room"
          />
-         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-900/80 to-slate-950"></div>
-         {/* Ambient Particles */}
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80"></div>
+         {/* Dust Particles */}
+         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 animate-pulse-slow"></div>
       </div>
 
       {/* Header Controls */}
-      <div className="absolute top-0 left-0 w-full p-6 z-50 flex justify-between items-start">
+      <div className="absolute top-0 left-0 w-full p-4 z-50 flex justify-between items-start">
         <button 
           onClick={onBack}
           className="group flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
         >
-          <div className="p-2 rounded-full border border-slate-700 bg-slate-900/80 group-hover:border-red-500 transition-colors">
-            <ArrowLeft size={18} /> 
+          <div className="p-2 rounded-full border border-slate-700 bg-black/60 backdrop-blur-md group-hover:border-red-500 transition-colors">
+            <ArrowLeft size={16} /> 
           </div>
-          <span className="text-sm font-bold tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">结束审讯</span>
+          <span className="text-xs font-bold tracking-wider uppercase opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 duration-300">
+            返回现场
+          </span>
         </button>
         
         <button 
            onClick={() => setShowHistory(!showHistory)}
-           className="p-2 rounded-full border border-slate-700 bg-slate-900/80 text-slate-400 hover:text-amber-500 hover:border-amber-500 transition-colors"
+           className="p-2 rounded-full border border-slate-700 bg-black/60 backdrop-blur-md text-slate-400 hover:text-amber-500 hover:border-amber-500 transition-colors"
            title="查看审讯记录"
         >
-           <History size={18} />
+           <History size={16} />
         </button>
       </div>
 
-      {/* Character Stage - Dynamic Lighting & Breathing */}
-      <div className="flex-1 flex items-end justify-center md:justify-between px-0 md:px-24 pb-48 md:pb-24 relative z-10 pointer-events-none h-full">
+      {/* Character Stage - Absolute Positioning for strict Left/Right layout */}
+      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
         
         {/* Detective (Left) */}
         <div className={`
-            hidden md:block absolute left-10 bottom-0 transition-all duration-1000 transform origin-bottom
-            ${!isSuspectTurn ? 'scale-105 z-20 brightness-110' : 'scale-95 z-10 brightness-[0.25] blur-[1px]'}
+            absolute bottom-0 left-[-5%] md:left-[2%] transition-all duration-700 transform origin-bottom-left
+            ${!isSuspectTurn ? 'z-20 brightness-110 scale-[1.02]' : 'z-10 brightness-[0.4] scale-100 blur-[1px]'}
         `}>
-            <div className={`
-                absolute bottom-0 w-full h-full bg-gradient-to-t from-black via-transparent to-transparent z-30
-            `}></div>
             <img 
                 src="https://img.freepik.com/free-vector/detective-holding-gun-illustration_1284-63309.jpg?size=626&ext=jpg" 
                 alt="Detective"
-                className="h-[65vh] object-cover animate-float"
-                style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0% 100%)', animationDuration: '7s' }}
+                className="h-[65vh] md:h-[85vh] w-auto object-cover object-top drop-shadow-[10px_0_30px_rgba(0,0,0,0.8)]"
             />
         </div>
 
-        {/* Suspect (Right/Center) */}
+        {/* Suspect (Right) */}
         <div className={`
-            relative transition-all duration-1000 transform origin-bottom w-full md:w-auto flex justify-center md:block
-            ${isSuspectTurn ? 'scale-110 md:scale-105 z-20 brightness-110' : 'scale-100 md:scale-95 z-10 brightness-[0.3] blur-[1px]'}
+            absolute bottom-0 right-[-5%] md:right-[2%] transition-all duration-700 transform origin-bottom-right
+            ${isSuspectTurn ? 'z-20 brightness-110 scale-[1.02]' : 'z-10 brightness-[0.4] scale-100 blur-[1px]'}
         `}>
-             {/* Dynamic Spotlight */}
-             <div className={`
-                absolute -top-40 left-1/2 -translate-x-1/2 w-[150%] h-[150%] 
-                bg-gradient-to-b from-red-500/10 via-transparent to-transparent rounded-full blur-[100px] pointer-events-none
-                transition-opacity duration-1000 ${isSuspectTurn ? 'opacity-100' : 'opacity-0'}
-             `}></div>
-
-             <div className={`absolute -top-20 right-0 md:-right-10 flex flex-col items-end opacity-0 transition-opacity duration-500 ${isSuspectTurn ? 'opacity-100' : ''}`}>
-                <span className="text-red-500 font-black text-6xl opacity-10 font-serif">{suspect.name.charAt(0)}</span>
-             </div>
+            {/* Suspect Name Tag (Floating) */}
+             <div className={`absolute bottom-[40vh] -left-10 bg-red-900/90 text-red-100 px-4 py-1 text-xs font-bold tracking-widest skew-x-[10deg] border-r-2 border-red-500 shadow-lg transition-opacity duration-300 ${isSuspectTurn ? 'opacity-100' : 'opacity-0'}`}>
+                {suspect.name}
+            </div>
 
             <img 
                 src={getAvatarUrl(suspect)} 
                 alt={suspect.name}
-                className={`
-                   h-[60vh] md:h-[70vh] object-cover drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]
-                   animate-float
-                `}
-                style={{ animationDuration: '6s', maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+                className="h-[65vh] md:h-[85vh] w-auto object-cover object-top drop-shadow-[-10px_0_30px_rgba(0,0,0,0.8)] mask-image-gradient"
+                style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
             />
         </div>
       </div>
 
-      {/* Interaction Interface */}
-      <div className="absolute bottom-0 w-full z-40 pt-20 pb-8 px-4 md:px-0 bg-gradient-to-t from-black via-black/95 to-transparent">
-         <div className="max-w-4xl mx-auto w-full relative min-h-[180px] flex flex-col justify-end">
+      {/* Interaction Interface - Centered and Compact */}
+      <div className="absolute bottom-0 w-full z-40 px-4 pb-8 flex justify-center items-end bg-gradient-to-t from-black via-black/80 to-transparent pt-20">
+         <div className="w-full max-w-2xl relative min-h-[140px] flex flex-col justify-end">
             
             {/* Suspect Dialogue Box */}
             {isSuspectTurn ? (
-                <div className="animate-slide-up relative mx-2 md:mx-0">
-                    <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
-                        {/* Decorative Line */}
-                        <div className="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
-                        
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="text-red-500 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                                {suspect.name}
-                            </div>
-                            {isTyping && <Volume2 size={16} className="text-slate-500 animate-pulse" />}
+                <div className="animate-slide-up relative">
+                    <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 rounded-sm p-5 shadow-2xl relative">
+                        {/* Speaker Label */}
+                        <div className="absolute -top-3 left-4 bg-red-700 text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-widest">
+                            {suspect.name} SPEAKING
                         </div>
                         
-                        <div className="pr-12 min-h-[4rem]">
-                            <p className="text-xl md:text-2xl text-slate-100 leading-relaxed font-serif tracking-wide">
+                        <div className="pr-8">
+                            <p className="text-lg text-slate-200 leading-relaxed font-serif tracking-wide">
                               {displayedText}
                               {displayedText.length < (lastMsg?.content.length || 0) && (
-                                  <span className="inline-block w-2 h-5 bg-red-500 ml-1 animate-pulse align-middle shadow-[0_0_10px_rgba(220,38,38,0.8)]"></span>
+                                  <span className="inline-block w-1.5 h-4 bg-red-500 ml-1 animate-pulse align-middle"></span>
                               )}
                             </p>
                         </div>
@@ -225,53 +208,59 @@ export const InterrogationView: React.FC<InterrogationViewProps> = ({
                          {!isTyping && (
                            <button 
                               onClick={handleContinue}
-                              className="absolute bottom-6 right-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                              className="absolute bottom-3 right-3 flex items-center gap-1 text-slate-500 hover:text-white transition-colors group"
                            >
-                              <span className="text-xs font-bold uppercase tracking-widest">
+                              <span className="text-[10px] font-bold uppercase tracking-widest">
                                   {displayedText.length < (lastMsg?.content.length || 0) ? "跳过" : "继续"}
                               </span>
-                              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                              <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                            </button>
                          )}
                     </div>
                 </div>
             ) : (
-                /* User Choices UI */
-                <div className="flex flex-col md:flex-row gap-6 items-end animate-slide-up mx-2 md:mx-0">
-                    
-                    {/* Fixed Options */}
-                    <div className="flex-1 w-full grid grid-cols-1 gap-3">
+                /* User Choices UI - Vertical List Style */
+                <div className="animate-slide-up space-y-2">
+                    {/* Detective Label */}
+                    <div className="flex items-center gap-2 mb-1 pl-1 opacity-70">
+                        <span className="text-[10px] font-bold text-amber-500 bg-amber-950/50 px-2 py-0.5 border border-amber-900 rounded-sm tracking-widest uppercase">
+                            DETECTIVE
+                        </span>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
                         {activeQuestions.map((q, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => handleOptionClick(q)}
-                                className="text-left bg-slate-900/60 hover:bg-slate-800/90 border border-slate-700 hover:border-amber-600/50 backdrop-blur-md p-4 rounded-lg transition-all duration-200 group flex items-center gap-4 relative overflow-hidden"
+                                className="w-full text-left bg-black/60 hover:bg-red-950/40 border-l-[3px] border-slate-600 hover:border-red-600 backdrop-blur-sm py-3 px-4 transition-all duration-200 group flex items-center gap-4 relative overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-amber-600/5 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
-                                <span className="text-slate-500 font-mono text-xs font-bold group-hover:text-amber-500">0{idx + 1}</span>
-                                <span className="font-sans text-slate-200 text-base md:text-lg tracking-wide group-hover:text-white">{q}</span>
+                                <span className="text-red-600/50 font-mono text-xs font-bold group-hover:text-red-500 transition-colors">
+                                    0{idx + 1}
+                                </span>
+                                <span className="font-sans text-slate-300 text-sm font-medium tracking-wide group-hover:text-white truncate">
+                                    {q}
+                                </span>
                             </button>
                         ))}
-                    </div>
-
-                    {/* Custom Input */}
-                    <div className="w-full md:w-1/3 bg-slate-900/90 p-1 rounded-xl border border-slate-700 backdrop-blur-xl shadow-xl">
-                         <form onSubmit={handleSubmit} className="relative flex items-center">
-                            <input
+                        
+                        {/* Custom Input Compact */}
+                        <div className="bg-black/60 border-l-[3px] border-slate-700 focus-within:border-amber-600 flex items-center pr-2 transition-colors">
+                             <input
                                 type="text"
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
-                                placeholder="自定义询问..."
-                                className="w-full bg-transparent text-slate-200 px-4 py-4 focus:outline-none placeholder-slate-600 font-medium"
+                                placeholder="输入自定义问题..."
+                                className="w-full bg-transparent text-slate-200 px-4 py-3 text-sm focus:outline-none placeholder-slate-600 font-medium"
                             />
                             <button 
-                                type="submit"
+                                onClick={handleSubmit}
                                 disabled={!input.trim()}
-                                className="p-3 mr-1 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all disabled:opacity-0"
+                                className="p-1.5 text-slate-500 hover:text-white transition-colors disabled:opacity-0"
                             >
-                                <Send size={18} />
+                                <Send size={14} />
                             </button>
-                         </form>
+                        </div>
                     </div>
                 </div>
             )}
@@ -280,22 +269,22 @@ export const InterrogationView: React.FC<InterrogationViewProps> = ({
 
       {/* History Overlay */}
       {showHistory && (
-          <div className="absolute inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
-              <div className="bg-slate-900 w-full max-w-2xl h-[80vh] rounded-2xl border border-slate-700 flex flex-col shadow-2xl relative overflow-hidden">
-                  <div className="p-6 border-b border-slate-800 flex justify-between items-center">
-                      <h3 className="font-serif text-2xl text-slate-100 tracking-wide">审讯记录</h3>
+          <div className="absolute inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+              <div className="bg-slate-900 w-full max-w-2xl h-[70vh] rounded-sm border border-slate-700 flex flex-col shadow-2xl relative overflow-hidden">
+                  <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                      <h3 className="font-serif text-lg text-slate-100 tracking-wide">审讯笔录</h3>
                       <button onClick={() => setShowHistory(false)} className="text-slate-400 hover:text-white transition-colors">✕</button>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-6 space-y-8" ref={scrollRef}>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
                       {messages.map(msg => (
                           <div key={msg.id} className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-                              <span className={`text-[10px] font-bold uppercase tracking-widest mb-2 px-2 py-0.5 rounded ${msg.sender === 'user' ? 'bg-amber-900/30 text-amber-500' : 'bg-red-900/30 text-red-500'}`}>
+                              <span className={`text-[10px] font-bold uppercase tracking-widest mb-1 px-1.5 py-0.5 rounded ${msg.sender === 'user' ? 'bg-amber-900/30 text-amber-500' : 'bg-red-900/30 text-red-500'}`}>
                                   {msg.sender === 'user' ? '侦探' : suspect.name}
                               </span>
-                              <div className={`max-w-[85%] text-base leading-relaxed ${
+                              <div className={`max-w-[85%] text-sm leading-relaxed p-2 rounded ${
                                   msg.sender === 'user' 
-                                  ? 'text-slate-300 text-right' 
-                                  : 'text-white font-serif'
+                                  ? 'bg-slate-800 text-slate-300' 
+                                  : 'bg-black/40 text-slate-400 font-serif border-l-2 border-red-900'
                               }`}>
                                   {msg.content}
                               </div>
