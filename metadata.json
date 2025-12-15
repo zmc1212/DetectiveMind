@@ -1,0 +1,5 @@
+{
+  "name": "Detective Mind (神探之心)",
+  "description": "An AI-powered interactive mystery game where you play the detective. Solve procedurally generated cases by interrogating the AI Game Master, finding clues, and deducing the truth.",
+  "requestFramePermissions": []
+}
